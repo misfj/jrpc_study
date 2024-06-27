@@ -1,0 +1,40 @@
+
+syntax = "proto3";
+//package 包名
+package pb;
+//option go_package = "../parent_proto;parent_proto";
+//parent_proto 输出位置;包名称(输出后的文件)
+option go_package = ".;pb";
+
+// 声明生成Go代码的导入路径（import path）
+//import "service2.proto";
+import "google/protobuf/timestamp.proto";
+// 引入google/api/annotations.proto文件
+import "google/api/annotations.proto";
+import  "google/validate/validate.proto";
+message Price {
+    int64 market_price = 1;  // 建议使用下划线的命名方式
+    int64 sale_price = 2;
+    //Price1 p=3;
+    google.protobuf.Timestamp date = 4;
+}
+message Request {
+    int64 id = 1 [(validate.rules).int64 = {gt: 0}];
+    int32 age = 2 [(validate.rules).int32 = {gt:0, lt: 120}];
+    uint32 code = 3 [(validate.rules).uint32 = {in: [1,2,3]}];
+    float score = 4 [(validate.rules).float = {not_in: [0, 99.99]}];
+    bool state = 5 [(validate.rules).bool.const = true];
+    string path = 6 [(validate.rules).string.const = "/hello"];
+    string phone = 7 [(validate.rules).string.len = 11];
+    string explain = 8 [(validate.rules).string.min_len = 3];
+    string name = 9 [(validate.rules).string = {min_len: 1, max_len: 10}];
+    string card = 10 [(validate.rules).string.pattern = "(?i)^[0-9a-f]+$"];
+}
+service BookService{
+    rpc Create(Request)returns(Price){
+    option (google.api.http) = {
+            post: "/v1/book"
+            body: "*"
+        };
+    };
+}
